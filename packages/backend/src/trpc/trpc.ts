@@ -7,7 +7,19 @@ export const router = t.router;
 export const publicProcedure = t.procedure;
 export const middleware = t.middleware;
 
-const isAuthed = middleware(async ({ ctx, next }) => {
+const isAuthed = middleware(({ ctx, next }) => {
+  if (!ctx.session.authenticated) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      session: ctx.session as { userId: string; authenticated: true },
+    },
+  });
+});
+
+const hasProfile = middleware(async ({ ctx, next }) => {
   if (!ctx.session.authenticated) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
@@ -26,4 +38,5 @@ const isAuthed = middleware(async ({ ctx, next }) => {
   });
 });
 
-export const protectedProcedure = t.procedure.use(isAuthed);
+export const authedProcedure = t.procedure.use(isAuthed);
+export const protectedProcedure = t.procedure.use(hasProfile);

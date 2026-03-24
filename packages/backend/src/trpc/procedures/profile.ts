@@ -4,17 +4,17 @@ import {
   idSchema,
   userProfileSchema,
 } from "@synaps/shared";
-import { protectedProcedure, router } from "../trpc.js";
+import { authedProcedure, protectedProcedure, router } from "../trpc.js";
 
 export const profileRouter = router({
-  get: protectedProcedure.query(async ({ ctx }) => {
+  get: authedProcedure.query(async ({ ctx }) => {
     return ctx.prisma.profile.findUnique({
       where: { userId: ctx.session.userId },
       include: { allergies: true, user: { select: { name: true, email: true } } },
     });
   }),
 
-  create: protectedProcedure
+  create: authedProcedure
     .input(userProfileSchema)
     .mutation(async ({ ctx, input }) => {
       return ctx.prisma.profile.create({
