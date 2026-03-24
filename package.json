@@ -1,0 +1,23 @@
+{
+  "name": "synaps",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail -p \"[{name}]\" -c \"bgBlue.bold,bgGreen.bold,bgMagenta.bold\" -n \"backend,frontend,worker\" \"bun run --cwd packages/backend dev 2>&1 | bunx pino-pretty --colorize\" \"bun run --cwd packages/frontend dev\" \"bun run --cwd packages/backend worker:dev\"",
+    "build": "bun run --filter '*' build",
+    "test": "bun run --filter '*' test",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check .",
+    "db:migrate": "bun run --filter @synaps/backend db:migrate",
+    "db:seed": "bun run --filter @synaps/backend db:seed",
+    "db:generate": "bun run --filter @synaps/backend db:generate"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.8",
+    "@types/pg": "8.11.11",
+    "concurrently": "^9.2.1"
+  }
+}

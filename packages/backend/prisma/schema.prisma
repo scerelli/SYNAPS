@@ -1,0 +1,406 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  name          String
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  profile       Profile?
+}
+
+model Profile {
+  id                String      @id @default(cuid())
+  userId            String      @unique
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateOfBirth       DateTime
+  sex               String
+  bloodType         String?
+  heightCm          Float?
+  latitude          Float?
+  longitude         Float?
+  dietaryPreference String      @default("omnivore")
+  smokingStatus     String      @default("never")
+  cigarettesPerDay  Int?
+  smokeQuitDate     DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  allergies         Allergy[]
+  reports           Report[]
+  sleepLogs         SleepLog[]
+  dietLogs          DietLog[]
+  conditions        Condition[]
+  reminders         Reminder[]
+  graphNodes        GraphNode[]
+  activityLogs      ActivityLog[]
+  healthDiaries     HealthDiary[]
+  metricStates      MetricState[]
+  weightLogs        WeightLog[]
+  medications       Medication[]
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([token])
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Allergy {
+  id        String   @id @default(cuid())
+  name      String
+  severity  String?
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([profileId])
+}
+
+model Settings {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
+
+model Tag {
+  id      String      @id @default(cuid())
+  name    String      @unique
+  slug    String      @unique
+  color   String      @default("#6366f1")
+  reports ReportTag[]
+}
+
+model ReportTag {
+  reportId String
+  tagId    String
+  report   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([reportId, tagId])
+  @@index([reportId])
+  @@index([tagId])
+}
+
+model Doctor {
+  id        String   @id @default(cuid())
+  name      String
+  specialty String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  reports   Report[]
+
+  @@index([name])
+}
+
+model Report {
+  id         String        @id @default(cuid())
+  title      String
+  reportDate DateTime
+  profileId  String
+  profile    Profile       @relation(fields: [profileId], references: [id])
+  notes      String?
+  facility   String?
+  examType   String?
+  doctorId   String?
+  doctor     Doctor?       @relation(fields: [doctorId], references: [id])
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  deletedAt  DateTime?
+  files      ReportFile[]
+  entries    ReportEntry[]
+  aiAnalyses AiAnalysis[]
+  graphNodes GraphNode[]
+  tags       ReportTag[]
+
+  @@index([profileId])
+  @@index([reportDate])
+  @@index([doctorId])
+}
+
+model ReportFile {
+  id           String   @id @default(cuid())
+  reportId     String
+  report       Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  originalName String
+  storagePath  String
+  mimeType     String
+  sizeBytes    Int
+  createdAt    DateTime @default(now())
+
+  @@index([reportId])
+}
+
+model ReportEntry {
+  id            String   @id @default(cuid())
+  reportId      String
+  report        Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  biomarkerName String
+  value         Float
+  unit          String
+  referenceMin  Float?
+  referenceMax  Float?
+  status        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([reportId])
+  @@index([biomarkerName])
+}
+
+model AiAnalysis {
+  id           String   @id @default(cuid())
+  reportId     String
+  report       Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  rawResponse  String
+  modelUsed    String
+  tokensUsed   Int?
+  status       String   @default("pending")
+  errorMessage String?
+  createdAt    DateTime @default(now())
+
+  @@index([reportId])
+}
+
+model Condition {
+  id          String      @id @default(cuid())
+  profileId   String
+  profile     Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  name        String
+  diagnosedAt DateTime?
+  resolvedAt  DateTime?
+  isCurrent   Boolean     @default(true)
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  graphNodes  GraphNode[]
+
+  @@index([profileId])
+}
+
+model SleepLog {
+  id         String   @id @default(cuid())
+  profileId  String
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  date       DateTime @db.Date
+  hoursSlept Float
+  quality    Int?
+  notes      String?
+  createdAt  DateTime @default(now())
+
+  @@unique([profileId, date])
+  @@index([profileId])
+}
+
+model DietLog {
+  id          String   @id @default(cuid())
+  profileId   String
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  date        DateTime @db.Date
+  mealType    String
+  description String
+  calories    Int?
+  caloriesAi  Boolean  @default(false)
+  proteinG    Int?
+  carbsG      Int?
+  fatG        Int?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@index([profileId])
+  @@index([date])
+}
+
+model GraphNode {
+  id          String      @id @default(cuid())
+  profileId   String
+  profile     Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  nodeType    String
+  label       String
+  metadata    Json        @default("{}")
+  reportId    String?
+  report      Report?     @relation(fields: [reportId], references: [id], onDelete: SetNull)
+  conditionId String?
+  condition   Condition?  @relation(fields: [conditionId], references: [id], onDelete: SetNull)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  outEdges    GraphEdge[] @relation("sourceNode")
+  inEdges     GraphEdge[] @relation("targetNode")
+
+  @@index([profileId])
+  @@index([nodeType])
+  @@index([reportId])
+  @@index([conditionId])
+}
+
+model GraphEdge {
+  id           String    @id @default(cuid())
+  sourceId     String
+  sourceNode   GraphNode @relation("sourceNode", fields: [sourceId], references: [id], onDelete: Cascade)
+  targetId     String
+  targetNode   GraphNode @relation("targetNode", fields: [targetId], references: [id], onDelete: Cascade)
+  relationship String
+  weight       Float     @default(0)
+  metadata     Json      @default("{}")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([sourceId, targetId, relationship])
+  @@index([sourceId])
+  @@index([targetId])
+}
+
+model Reminder {
+  id          String    @id @default(cuid())
+  profileId   String
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  dueDate     DateTime?
+  isRecurring Boolean   @default(false)
+  cronExpr    String?
+  isDismissed Boolean   @default(false)
+  source      String    @default("ai")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([profileId])
+  @@index([isDismissed])
+}
+
+model ActivityLog {
+  id              String   @id @default(cuid())
+  profileId       String
+  profile         Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  date            DateTime @db.Date
+  activityType    String
+  durationMinutes Int
+  intensityLevel  Int?
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@index([profileId])
+  @@index([date])
+}
+
+model HealthDiary {
+  id          String   @id @default(cuid())
+  profileId   String
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  date        DateTime @db.Date
+  energyLevel Int?
+  moodLevel   Int?
+  painLevel   Int?
+  painArea    String?
+  note        String?
+  createdAt   DateTime @default(now())
+
+  @@unique([profileId, date])
+  @@index([profileId])
+}
+
+model MetricState {
+  id            String   @id @default(cuid())
+  profileId     String
+  profile       Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  domain        String
+  metricKey     String
+  ema           Float
+  emVar         Float    @default(0)
+  shortEma      Float    @default(0)
+  sampleCount   Int      @default(0)
+  lastValue     Float
+  lastUpdatedAt DateTime
+  tau           Float
+
+  @@unique([profileId, domain, metricKey])
+  @@index([profileId])
+}
+
+model EnvironmentCache {
+  id        String   @id @default(cuid())
+  latitude  Float
+  longitude Float
+  date      DateTime @db.Date
+  dataType  String
+  data      Json
+  fetchedAt DateTime @default(now())
+
+  @@unique([latitude, longitude, date, dataType])
+}
+
+model WeightLog {
+  id         String   @id @default(cuid())
+  profileId  String
+  profile    Profile  @relation(fields: [profileId], references: [id])
+  date       DateTime @db.Date
+  weightKg   Float
+  bodyFatPct Float?
+  waistCm    Float?
+  notes      String?
+  createdAt  DateTime @default(now())
+
+  @@index([profileId])
+  @@index([date])
+}
+
+model Medication {
+  id        String    @id @default(cuid())
+  profileId String
+  profile   Profile   @relation(fields: [profileId], references: [id])
+  name      String
+  dosage    String?
+  frequency String    @default("daily")
+  startDate DateTime?
+  isActive  Boolean   @default(true)
+  notes     String?
+  createdAt DateTime  @default(now())
+
+  @@index([profileId])
+}
