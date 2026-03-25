@@ -173,27 +173,28 @@ cd ~/synaps && docker compose pull && docker compose up -d --build
 
 ## References
 
-- **EWMA with continuous-time decay**: Feltz-Cornelis et al. (2023), PMC10248291; CDC NSSP Rnssp package
-- **Allostatic load**: Gustafsson et al. (2023), 17-cohort IPD consensus meta-analysis, PMC10620736
-- **Physical activity MET values**: WHO Physical Activity Guidelines; Ainsworth Compendium of Physical Activities (2024 update)
-- **Sleep <> CRP**: Irwin et al. (2016), PMC4666828
-- **Activity <> lipids**: Meta-analysis of 148 RCTs, Sports Medicine (2024)
-- **N-of-1 within-person correlations**: Myin-Germeys et al., Experience Sampling Method; Van den Berg et al. (2017), *Behavior Research Methods*, doi:10.3758/s13428-016-0799-x
-- **False discovery rate correction**: Benjamini & Hochberg (1995), *JRSS-B* 57(1):289–300
-- **Personal science methodology**: Larson et al. (2023), *npj Digital Medicine* 6:107
-- **Lag effects: sleep → inflammation**: Prather et al. (2021), *Psychosomatic Medicine* 83(7):669–676
-- **Exercise → mood (meta-analysis)**: Schuch et al. (2018), *JAMA Psychiatry* 75(6):566–576
+| Topic | Reference | Source / DOI |
+| :--- | :--- | :--- |
+| **EWMA & Time Decay** | Feltz-Cornelis et al. (2023) | [PMC10248291](https://pubmed.ncbi.nlm.nih.gov/37274003/) / CDC NSSP Rnssp |
+| **Allostatic Load** | Gustafsson et al. (2023) | [PMC10620736](https://pubmed.ncbi.nlm.nih.gov/37924446/) (17-cohort IPD) |
+| **Physical Activity (MET)** | WHO Guidelines / Ainsworth (2024) | Compendium of Physical Activities |
+| **Sleep <> CRP** | Irwin et al. (2016) | [PMC4666828](https://pubmed.ncbi.nlm.nih.gov/26135397/) |
+| **Activity <> Lipids** | Sports Medicine (2024) | Meta-analysis of 148 RCTs |
+| **N-of-1 Correlations** | Myin-Germeys / Van den Berg (2017) | [doi:10.3758/s13428-016-0799-x](https://doi.org/10.3758/s13428-016-0799-x) |
+| **FDR Correction** | Benjamini & Hochberg (1995) | *JRSS-B* 57(1):289–300 |
+| **Personal Science** | Larson et al. (2023) | [npj Digital Medicine 6:107](https://doi.org/10.1038/s41746-023-00840-y) |
+| **Lag Effects (Sleep/Inflam.)** | Prather et al. (2021) | *Psychosomatic Medicine* 83(7):669–676 |
+| **Exercise & Mood** | Schuch et al. (2018) | *JAMA Psychiatry* 75(6):566–576 |
 
 ---
 
-## Possible future improvements
+## Possible Future Improvements
 
-Things I'd like to explore but haven't implemented yet:
-
-- **Structured sleep quality (RU-SATED)** — replace the simple 1–5 quality slider with the 6-dimension RU-SATED questionnaire (Regularity, Satisfaction, Alertness, Timing, Efficiency, Duration), which gives a more clinically meaningful sleep score. Buysse (2014), PMC6452900; cross-cultural validation: Furihata et al. (2022), *Sleep Medicine* 91:109–114, PMID 35303631.
-- **Dietary quality index (HEI-2020)** — compute the USDA Healthy Eating Index from logged meals instead of just tracking raw calories and macros. Would require more structured food logging. PMC6719291.
-- **Bayesian biomarker estimation** — replace the EWMA point estimate with a conjugate normal–normal model that maintains a full posterior distribution over each biomarker. This would give proper uncertainty intervals and handle sparse lab data better. Murphy, UBC conjugate normal; Gong et al. (2024), PMID 38855634.
-- **Changepoint detection (BOCPD)** — replace the short/long EMA trend heuristic with Bayesian Online Changepoint Detection to identify structural shifts in time series (e.g. a sudden sustained change in a biomarker after a medication change). Adams & MacKay (2007).
-- **Local AI via Ollama** — test whether open-weight models running locally can produce comparable graph builds and reminders to Claude, for full offline/private operation.
-
+| Feature | Objective | Methodology / Reference |
+| :--- | :--- | :--- |
+| **Structured Sleep (RU-SATED)** | Replace 1–5 slider with 6-dimension clinical sleep health score. | Buysse (2014) [PMC6452900](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6452900/); Furihata (2022) |
+| **Dietary Quality (HEI-2020)** | Compute USDA Healthy Eating Index from logged meals (requires structured logging). | [PMC6719291](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6719291/) |
+| **Bayesian Biomarkers** | Use conjugate normal–normal models for posterior distribution and uncertainty. | Murphy (UBC); Gong et al. (2024) [PMID 38855634](https://pubmed.ncbi.nlm.nih.gov/38855634/) |
+| **Changepoint Detection** | Implement BOCPD to identify structural shifts in time series (e.g. meds change). | Adams & MacKay (2007) |
+| **Local AI (Ollama)** | Evaluate open-weight models for private/offline graph builds and reminders. | Local LLM Integration |
 
